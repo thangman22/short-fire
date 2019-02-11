@@ -17,9 +17,9 @@ Firebase hosting is support re-direct URL to another domain without charge any c
 ## how to
  | Command                | Desciption
  | :--------------------- |:-------------|
- | `frame-link init`                   | Initial frame-link for create configulation.
- | `frame-link create [url] <slug> `   | Create shorten URL defind slug is optional.
- | `frame-link list <q>`               | List all available URL. defind q for searching.
- | `frame-link dump`                   | Dump Firebase configulation for backup purpose.
- | `frame-link restore <file>`         | Restore configulation from file.
- | `frame-link delete [slug]`          | Delete URL by specific slug.
+ | `flame-link init`                   | Initial flame-link for create configulation.
+ | `flame-link create [url] <slug> `   | Create shorten URL defind slug is optional.
+ | `flame-link list <q>`               | List all available URL. defind q for searching.
+ | `flame-link dump`                   | Dump Firebase configulation for backup purpose.
+ | `flame-link restore <file>`         | Restore configulation from file.
+ | `flame-link delete [slug]`          | Delete URL by specific slug.
