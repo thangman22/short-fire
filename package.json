@@ -1,11 +1,12 @@
 {
-  "name": "flame-link",
-  "version": "1.0.1",
+  "name": "short-fire",
+  "version": "1.0.3",
   "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
-  "scripts": {
-    "publish": "npm publish"
-  },
+  "keywords":[
+    "firebase",
+    "shorten"
+  ],
   "dependencies": {
     "cli-box": "^6.0.9",
     "cli-table": "^0.3.1",
@@ -29,6 +30,6 @@
     "eslint-plugin-standard": "^4.0.0"
   },
   "bin": {
-    "flame-link": "./index.js"
+    "short-fire": "./index.js"
   }
 }
