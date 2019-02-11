@@ -40,7 +40,7 @@ var firebaseRcData = {
 }
 
 const help = `
-Usage: fire-link [command] <options>
+Usage: fireurl [command] <options>
 
 Command:
   init                    Init fire link for create configulation.
@@ -51,8 +51,8 @@ Command:
   delete [slug]           Delete URL by specific slug.
 
 Examples:
-  $ fire-link http://example.com
-  $ fire-link http://example.com example
+  $ fireurl http://example.com
+  $ fireurl http://example.com example
   
 `
 
@@ -62,7 +62,7 @@ if (!argv['_'][0] || argv['_'][0] === '--help') {
 }
 
 if ((!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) && !argv['_'][0] === 'init') {
-  textBox(chalk.red('• Error') + ' Configulation not found. Please run `fire-link init`')
+  textBox(chalk.red('• Error') + ' Configulation not found. Please run `fireurl init`')
   process.exit(0)
 }
 
@@ -174,7 +174,7 @@ async function onInit () {
   firebaseRcData.projects.default = answers['project-id']
   await writeFile(workspacePath + '/firebaserc', jsonFormat(firebaseRcData, config))
   await writeFile(workspacePath + '/config.json', jsonFormat(answers, config))
-  textBox(chalk.green.bold('• Completed') + ' Create configulation Please run `fire-link create [url]`')
+  textBox(chalk.green.bold('• Completed') + ' Create configulation Please run `fireurl create [url]`')
 }
 
 async function onCreate () {
@@ -186,7 +186,7 @@ async function onCreate () {
 
   // Check URL not null
   if (!url) {
-    textBox(chalk.red('• Error') + ' URL is empty please define. \n\n Example usage: `fire-link [url] <slug>`')
+    textBox(chalk.red('• Error') + ' URL is empty please define. \n\n Example usage: `fireurl [url] <slug>`')
     process.exit(1)
   }
 
