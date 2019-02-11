@@ -97,19 +97,22 @@ if (argv['_'][0] === 'delete') {
 
 async function onDelete () {
   let slug = argv['_'][1]
-  if (slug) {
-    redirectList = redirectList.filter(redirect => {
-      if (redirect.source !== '/' + slug) {
-        return true
-      } else {
-        return false
-      }
-    })
-
-    firebaseConfig.hosting.redirects = redirectList
-    await writeFile(workspacePath + '/firebase.json', jsonFormat(firebaseConfig, config))
-    textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
+  if (!slug) {
+    textBox(chalk.red.bold('• Error') + ' Please define slug to delete')
+    process.exit(0)
   }
+
+  redirectList = redirectList.filter(redirect => {
+    if (redirect.source !== '/' + slug) {
+      return true
+    } else {
+      return false
+    }
+  })
+
+  firebaseConfig.hosting.redirects = redirectList
+  await writeFile(workspacePath + '/firebase.json', jsonFormat(firebaseConfig, config))
+  textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
 }
 
 async function onRestore () {
