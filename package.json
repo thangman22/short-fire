@@ -1,4 +1,7 @@
 {
+  "name": "firelink",
+  "version": "1.0.0-beta",
+  "description": "Self hosted shorten URL genarator for Firebase hosting",
   "dependencies": {
     "cli-box": "^6.0.9",
     "cli-table": "^0.3.1",
@@ -11,8 +14,7 @@
     "json-format": "^1.0.1",
     "minimist": "^1.2.0",
     "qrcode-terminal": "^0.12.0",
-    "randomstring": "^1.1.5",
-    "terminal-link": "^1.2.0"
+    "randomstring": "^1.1.5"
   },
   "devDependencies": {
     "eslint": "^5.13.0",
@@ -21,5 +23,8 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0"
+  },
+  "bin": {
+    "firelink": "./index.js"
   }
 }

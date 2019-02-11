@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const argv = require('minimist')(process.argv.slice(2))
 const inquirer = require('inquirer')
 const path = require('path')
@@ -26,6 +27,7 @@ var table = new CliTable({
   style: { head: ['green'] },
   head: ['Short URL', 'Full URL']
 })
+
 const workspacePath = path.join(path.dirname(fs.realpathSync(__filename)), 'workspace')
 const firebaseConfig = require(path.join(path.dirname(fs.realpathSync(__filename)), 'workspace') + '/firebase.json')
 const fireLinkConfig = require(path.join(path.dirname(fs.realpathSync(__filename)), 'workspace') + '/config.json')
@@ -37,8 +39,31 @@ var firebaseRcData = {
   }
 }
 
-if (!argv['_'][0]) {
+const help = `
+Usage: firelink [command] <options>
 
+Command:
+  init                    Init fire link for create configulation.
+  create [url] <slug>     Create shorten URL defind slug is optional.
+  list <q>                List all available URL. defind q for searching.
+  dump                    Dump Firebase configulation for backup purpose.
+  restore <file>          Restore configulation from file.
+  delete [slug]           Delete URL by specific slug.
+
+Examples:
+  $ firelink http://example.com
+  $ firelink http://example.com example
+  
+`
+
+if (!argv['_'][0]) {
+  console.log(header + '\n')
+  console.log(help)
+}
+
+if (!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) {
+  textBox(chalk.red('• Error') + ' Configulation not found. Please run `firelink init`')
+  process.exit(0)
 }
 
 if (argv['_'][0] === 'init') {
@@ -65,6 +90,28 @@ if (argv['_'][0] === 'restore') {
   onRestore()
 }
 
+if (argv['_'][0] === 'delete') {
+  console.log(header + '\n')
+  onDelete()
+}
+
+async function onDelete () {
+  let slug = argv['_'][1]
+  if (slug) {
+    redirectList = redirectList.filter(redirect => {
+      if (redirect.source !== '/' + slug) {
+        return true
+      } else {
+        return false
+      }
+    })
+
+    firebaseConfig.hosting.redirects = redirectList
+    await writeFile(workspacePath + '/firebase.json', jsonFormat(firebaseConfig, config))
+    textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
+  }
+}
+
 async function onRestore () {
   let file = argv['_'][1]
   if (!file) {
@@ -73,6 +120,7 @@ async function onRestore () {
   }
   const configContent = require(file)
   await writeFile(workspacePath + '/firebase.json', jsonFormat(configContent, config))
+  deploy()
   textBox(chalk.green.bold('• Completed') + ' Restore Data completed.')
 }
 
@@ -204,7 +252,7 @@ async function onCreate () {
   }
 
   textBox(chalk.green.bold('• Completed') + ' Shrot link is ' + chalk.bold(finalLink) + ' (Ctrl + v to Paste)')
-  // console.log(await genQrcode(finalLink))
+  console.log(await genQrcode(finalLink))
 }
 
 function writeFile (file, text) {
