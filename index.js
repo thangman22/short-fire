@@ -61,7 +61,7 @@ if (!argv['_'][0] || argv['_'][0] === '--help') {
   console.log(help)
 }
 
-if (!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) {
+if ((!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) && !argv['_'][0] === 'init') {
   textBox(chalk.red('• Error') + ' Configulation not found. Please run `firelink init`')
   process.exit(0)
 }
@@ -174,6 +174,7 @@ async function onInit () {
   firebaseRcData.projects.default = answers['project-id']
   await writeFile(workspacePath + '/firebaserc', jsonFormat(firebaseRcData, config))
   await writeFile(workspacePath + '/config.json', jsonFormat(answers, config))
+  textBox(chalk.green.bold('• Completed') + ' Create configulation Please run `firelink create [url]`')
 }
 
 async function onCreate () {
