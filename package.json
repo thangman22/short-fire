@@ -1,7 +1,11 @@
 {
   "name": "firelink",
   "version": "1.0.0-beta",
+  "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
+  "scripts": {
+    "publish": "npm publish"
+  },
   "dependencies": {
     "cli-box": "^6.0.9",
     "cli-table": "^0.3.1",

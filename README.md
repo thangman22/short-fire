@@ -17,7 +17,7 @@ Firebase hosting is support re-direct URL to another domain without charge any c
 ## how to
  | Command                | Desciption
  | :--------------------- |:-------------|
- | `init`                   | Init fire link for create configulation.
+ | `init`                   | Initial Firelink for create configulation.
  | `create [url] <slug> `   | Create shorten URL defind slug is optional.
  | `list <q>`               | List all available URL. defind q for searching.
  | `dump`                   | Dump Firebase configulation for backup purpose.
