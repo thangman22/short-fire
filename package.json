@@ -1,5 +1,5 @@
 {
-  "name": "firelink",
+  "name": "fire-link",
   "version": "1.0.0-beta",
   "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
@@ -29,6 +29,6 @@
     "eslint-plugin-standard": "^4.0.0"
   },
   "bin": {
-    "firelink": "./index.js"
+    "fire-link": "./index.js"
   }
 }
