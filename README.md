@@ -1,4 +1,4 @@
-# 🔥FireUrl
+# 🔥fire Link
 Self hosted shorten URL genarator for Firebase hosting
 
 ## Problem
@@ -17,9 +17,9 @@ Firebase hosting is support re-direct URL to another domain without charge any c
 ## how to
  | Command                | Desciption
  | :--------------------- |:-------------|
- | `fireurl init`                   | Initial FireUrl for create configulation.
- | `fireurl create [url] <slug> `   | Create shorten URL defind slug is optional.
- | `fireurl list <q>`               | List all available URL. defind q for searching.
- | `fireurl dump`                   | Dump Firebase configulation for backup purpose.
- | `fireurl restore <file>`         | Restore configulation from file.
- | `fireurl delete [slug]`          | Delete URL by specific slug.
+ | `fire-link init`                   | Initial fire-link for create configulation.
+ | `fire-link create [url] <slug> `   | Create shorten URL defind slug is optional.
+ | `fire-link list <q>`               | List all available URL. defind q for searching.
+ | `fire-link dump`                   | Dump Firebase configulation for backup purpose.
+ | `fire-link restore <file>`         | Restore configulation from file.
+ | `fire-link delete [slug]`          | Delete URL by specific slug.
