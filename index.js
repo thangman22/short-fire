@@ -56,7 +56,7 @@ Examples:
   
 `
 
-if (!argv['_'][0]) {
+if (!argv['_'][0] || argv['_'][0] === '--help') {
   console.log(header + '\n')
   console.log(help)
 }
