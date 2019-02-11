@@ -51,8 +51,8 @@ Command:
   delete [slug]           Delete URL by specific slug.
 
 Examples:
-  $ short-fire http://example.com
-  $ short-fire http://example.com example
+  $ short-fire http://example.com/link
+  $ short-fire http://example.com/link example
   
 `
 
@@ -164,7 +164,7 @@ async function onInit () {
   }, {
     type: 'input',
     name: 'domain',
-    message: 'What is your domain name',
+    message: 'What is your domain name e.g. https://example.com',
     validate: function (val) {
       return val !== ''
     }
