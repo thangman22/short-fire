@@ -17,7 +17,7 @@ const config = {
   type: 'space',
   size: 2
 }
-const header = figlet.textSync('Fire link', {
+const header = figlet.textSync('Short Fire', {
   font: 'Graceful',
   horizontalLayout: 'default',
   verticalLayout: 'default'
@@ -43,7 +43,7 @@ const help = `
 Usage: short-fire [command] <options>
 
 Command:
-  init                    Init fire link for create configulation.
+  init                    Init Short fire for create configulation.
   create [url] <slug>     Create shorten URL defind slug is optional.
   list <q>                List all available URL. defind q for searching.
   dump                    Dump Firebase configulation for backup purpose.
@@ -51,8 +51,8 @@ Command:
   delete [slug]           Delete URL by specific slug.
 
 Examples:
-  $ short-fire http://example.com/link
-  $ short-fire http://example.com/link example
+  $ short-fire create http://example.com/link
+  $ short-fire create http://example.com/link example
   
 `
 
