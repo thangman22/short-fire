@@ -17,11 +17,11 @@ const config = {
   type: 'space',
   size: 2
 }
-const header = figlet.textSync('Short Fire', {
+const header = chalk.yellow(figlet.textSync('Short Fire', {
   font: 'Graceful',
   horizontalLayout: 'default',
   verticalLayout: 'default'
-})
+}))
 
 var table = new CliTable({
   style: { head: ['green'] },
@@ -61,7 +61,7 @@ if (!argv['_'][0] || argv['_'][0] === '--help') {
   console.log(help)
 }
 
-if ((!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) && !argv['_'][0] === 'init') {
+if ((!fireLinkConfig['project-id'] || !fireLinkConfig['token'] || !fireLinkConfig['domain']) && argv['_'][0] !== 'init') {
   textBox(chalk.red('• Error') + ' Configulation not found. Please run `short-fire init`')
   process.exit(0)
 }
@@ -255,7 +255,7 @@ async function onCreate () {
     await deploy()
   }
 
-  textBox(chalk.green.bold('• Completed') + ' Shrot link is ' + chalk.bold(finalLink) + ' (Ctrl + v to Paste)')
+  textBox(chalk.green.bold('• Completed') + ' Short link is ' + chalk.bold(finalLink) + ' (Ctrl + v to Paste)')
   console.log(await genQrcode(finalLink))
 }
 
