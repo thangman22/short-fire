@@ -1,4 +1,4 @@
-# 🔥Short fire
+# 🔥Short fire (Beta)
 Self hosted shorten URL genarator for Firebase hosting
 
 ## Problem
@@ -9,7 +9,7 @@ Firebase hosting is support re-direct URL to another domain without charge any c
 
 ## Limitation
 - No analytics provide.
-- No remote database provide please backup configulation frequently.
+- No remote database provide please backup configuration frequently.
 
 ## Pre-require
 - NPM or Yarn
@@ -17,9 +17,9 @@ Firebase hosting is support re-direct URL to another domain without charge any c
 ## how to
  | Command                | Desciption
  | :--------------------- |:-------------|
- | `short-fire init`                   | Initial short-fire for create configulation.
+ | `short-fire init`                   | Initial short-fire for create configuration.
  | `short-fire create [url] <slug> `   | Create shorten URL defind slug is optional.
  | `short-fire list <q>`               | List all available URL. defind q for searching.
- | `short-fire dump`                   | Dump Firebase configulation for backup purpose.
- | `short-fire restore <file>`         | Restore configulation from file.
+ | `short-fire dump`                   | Dump Firebase configuration for backup purpose.
+ | `short-fire restore <file>`         | Restore configuration from file.
  | `short-fire delete [slug]`          | Delete URL by specific slug.
