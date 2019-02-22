@@ -4,7 +4,7 @@
   "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
   "scripts": {
-    "dev-short-fire": "index.js",
+    "dev-short-fire": "node index.js",
     "deploy": "npm version patch && npm publish"
   },
   "keywords": [
