@@ -15,7 +15,7 @@ Firebase hosting supports re-directing URL to another domain without charge any 
 - NPM or Yarn
 
 ## How to
- | Command                | Descirption |
+ | Command                | Description |
  | :--------------------- |:-------------|
  | `short-fire init`                   | Initialize short-fire for create configuration.
  | `short-fire create [url] <slug> `   | Create shortened URL. Option slug is optional.
