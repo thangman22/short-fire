@@ -1,4 +1,4 @@
-# 🔥Short fire
+# 🔥Short fire (Beta)
 Self hosted shorten URL genarator for Firebase hosting
 
 ## Problem
