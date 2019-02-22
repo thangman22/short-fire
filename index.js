@@ -43,12 +43,15 @@ const help = `
 Usage: short-fire [command] <options>
 
 Command:
-  init                    Init Short fire for create configulation.
-  create [url] <slug>     Create shorten URL defind slug is optional.
-  list <q>                List all available URL. defind q for searching.
-  dump                    Dump Firebase configulation for backup purpose.
-  restore <file>          Restore configulation from file.
-  delete [slug]           Delete URL by specific slug.
+  init                          Init Short fire for create configulation.
+  create [url] <slug> <options> Create shorten URL defind slug is optional.
+      options:
+        -n, --new
+          Force the system to create a new random url when there is an existing destination.
+  list <q>                      List all available URL. defind q for searching.
+  dump                          Dump Firebase configulation for backup purpose.
+  restore <file>                Restore configulation from file.
+  delete [slug]                 Delete URL by specific slug.
 
 Examples:
   $ short-fire create http://example.com/link
@@ -181,8 +184,11 @@ async function onCreate () {
   let foundSlug = true
   let generatedSlug = null
   let duplicatedLink = false
+  
   let url = argv['_'][1]
   let slug = argv['_'][2]
+
+  const newOption = argv['new'] || argv['n']
 
   // Check URL not null
   if (!url) {
@@ -211,13 +217,15 @@ async function onCreate () {
       }
     })
 
-    if (findExistLink.length > 0) {
+    // Have existing link and do not have slug and do not have new option.
+    if (findExistLink.length > 0 && !slug && !newOption) {
       foundSlug = false
       duplicatedLink = true
       generatedSlug = findExistLink[0].source.replace('/', '')
       break
     }
 
+    // Do not have existing link.
     // Find duplicate slug for warning user.
     let findExist = redirectList.filter(redirect => {
       if ('/' + generatedSlug === redirect.source) {
