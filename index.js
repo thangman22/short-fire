@@ -211,13 +211,15 @@ async function onCreate () {
       }
     })
 
-    if (findExistLink.length > 0) {
+    // Have existing link and do not have slug.
+    if (findExistLink.length > 0 && !slug) {
       foundSlug = false
       duplicatedLink = true
       generatedSlug = findExistLink[0].source.replace('/', '')
       break
     }
 
+    // Do not have existing link.
     // Find duplicate slug for warning user.
     let findExist = redirectList.filter(redirect => {
       if ('/' + generatedSlug === redirect.source) {
