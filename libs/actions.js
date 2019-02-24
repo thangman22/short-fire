@@ -21,6 +21,7 @@ const onCreate = async (argv) => {
   const newOption = argv['new'] || argv['n']
 
   // Check URL not null
+
   if (!url) {
     textBox(chalk.red('• Error') + ' URL is empty please define. \n\n Example usage: `short-fire [url] <slug>`')
     process.exit(1)
@@ -90,7 +91,7 @@ const onCreate = async (argv) => {
     await writeFile(workspacePath + '/firebase.json', jsonFormat(firebaseConfig, jsonFormatConfig))
     // Deploy to firebase hosting.
     printToscreen(chalk.blue.bold('• Info') + ' Firebase Updating....')
-    await deploy()
+    await deploy(argv)
   }
 
   textBox(chalk.green.bold('• Completed') + ' Short link is ' + chalk.bold(finalLink) + ' (Ctrl + v to Paste)')
@@ -114,7 +115,7 @@ const onDelete = async (argv) => {
 
   firebaseConfig.hosting.redirects = redirectList
   await writeFile(workspacePath + '/firebase.json', jsonFormat(firebaseConfig, jsonFormatConfig))
-  deploy()
+  deploy(argv)
   textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
 }
 
@@ -126,7 +127,7 @@ const onRestore = async (argv) => {
   }
   const configContent = require(file)
   await writeFile(workspacePath + '/firebase.json', jsonFormat(configContent, jsonFormatConfig))
-  deploy()
+  deploy(argv)
   textBox(chalk.green.bold('• Completed') + ' Restore Data completed.')
 }
 

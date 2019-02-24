@@ -7,7 +7,11 @@
       "**/node_modules/**"
     ],
     "redirects": [
-      
+      {
+        "source": "/VsqwKBo",
+        "destination": "https://google.com",
+        "type": 302
+      }
     ]
   }
 }

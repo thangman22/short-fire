@@ -1,5 +1,4 @@
 const qrcode = require('qrcode-terminal')
-const argv = require('minimist')(process.argv.slice(2))
 const client = require('firebase-tools')
 const fs = require('fs')
 const box = require('cli-box')
@@ -29,7 +28,7 @@ const textBox = (text) => {
   printToscreen(boxString)
 }
 
-const deploy = async () => {
+const deploy = async (argv) => {
   // Add dry-run for testiung purpose
   if (!argv['dry-run']) {
     return client.deploy({
