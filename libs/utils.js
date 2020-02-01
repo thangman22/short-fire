@@ -1,6 +1,7 @@
 const qrcode = require('qrcode-terminal')
 const client = require('firebase-tools')
 const fs = require('fs')
+const path = require('path')
 const box = require('cli-box')
 var { shortFireConfig, workspacePath } = require('./config')
 
@@ -48,12 +49,22 @@ const writeFile = (file, text) => {
   })
 }
 
+const readFile = (file) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path.join(file), async (err, data) => {
+      if (err) reject(err)
+      resolve(data)
+    })
+  })
+}
+
 const printToscreen = (content) => {
   console.log(content)
 }
 
 module.exports = {
   printToscreen,
+  readFile,
   writeFile,
   deploy,
   isUrlValid,

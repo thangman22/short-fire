@@ -5,7 +5,7 @@ const jsonFormat = require('json-format')
 const CliTable = require('cli-table')
 const inquirer = require('inquirer')
 
-const { isUrlValid, genQrcode, textBox, deploy, writeFile, printToscreen } = require('./utils')
+const { isUrlValid, genQrcode, textBox, deploy, writeFile, printToscreen, readFile } = require('./utils')
 var { redirectList, shortFireConfig, firebaseConfig, workspacePath, jsonFormatConfig, firebaseRcData, cliTableConfig } = require('./config')
 
 var table = new CliTable(cliTableConfig)
@@ -172,10 +172,19 @@ const onInit = async () => {
     validate: function (val) {
       return val !== ''
     }
+  },
+  {
+    type: 'input',
+    name: 'service-account-key-file',
+    message: 'Your Service Account Key File for Back to Cloude storage (Optional)'
   }]
 
-  let answers = await inquirer.prompt(questions)
+  const answers = await inquirer.prompt(questions)
   firebaseRcData.projects.default = answers['project-id']
+  if (answers['service-account-key-file']) {
+    const serviceAccountData = await readFile(answers['service-account-key-file'])
+    await writeFile(workspacePath + '/service-account.json', serviceAccountData)
+  }
   await writeFile(workspacePath + '/firebaserc', jsonFormat(firebaseRcData, jsonFormatConfig))
   await writeFile(workspacePath + '/config.json', jsonFormat(answers, jsonFormatConfig))
   textBox(chalk.green.bold('• Completed') + ' Create configulation Please run `short-fire create [url]`')
