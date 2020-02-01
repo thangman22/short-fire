@@ -1,8 +1,14 @@
 const path = require('path')
 const fs = require('fs')
 
+const FirebaseConfigPath = path.join(path.dirname(fs.realpathSync(__filename)), '../workspace') + '/firebase.json'
 const workspacePath = path.join(path.dirname(fs.realpathSync(__filename)), '../workspace')
-const firebaseConfig = require(path.join(path.dirname(fs.realpathSync(__filename)), '../workspace') + '/firebase.json')
+
+if (!fs.existsSync(path)) {
+  fs.writeFileSync(FirebaseConfigPath, '{ "hosting": { "public": "./", "ignore": [ "firebase.json", "**/.*", "**/node_modules/**" ], "redirects": [ { "source": "/VsqwKBo", "destination": "https://google.com", "type": 302 } ] } }')
+}
+
+const firebaseConfig = require(FirebaseConfigPath)
 const shortFireConfig = require(path.join(path.dirname(fs.realpathSync(__filename)), '../workspace') + '/config.json')
 const redirectList = firebaseConfig.hosting.redirects
 var firebaseRcData = {
