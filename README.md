@@ -1,25 +1,25 @@
 # 🔥Short fire (Beta)
-Self hosted shorten URL genarator for Firebase hosting
+Self-hosted shortened URL genarator for Firebase hosting
 
 ## Problem
-Current shorten URL service such as Bit.ly not support free of charge custom domain support. It make user need to pay expensive fee to personal use.
+Current shortened URL services such as Bit.ly do not support free of charge custom domain support. It makes user need to pay expensive fee for personal use.
 
 ## Solution
-Firebase hosting is support re-direct URL to another domain without charge any cent. 
+Firebase hosting supports re-directing URL to another domain without charge any cent. 
 
-## Limitation
-- No analytics provide.
-- No remote database provide please backup configuration frequently.
+## Limitations
+- No analytics provided.
+- No remote database provided, please backup configuration frequently.
 
-## Pre-require
+## Pre-requisites
 - NPM or Yarn
 
-## how to
- | Command                | Desciption
+## How to
+ | Command                | Description |
  | :--------------------- |:-------------|
- | `short-fire init`                   | Initial short-fire for create configuration.
- | `short-fire create [url] <slug> `   | Create shorten URL defind slug is optional.
- | `short-fire list <q>`               | List all available URL. defind q for searching.
+ | `short-fire init`                   | Initialize short-fire for create configuration.
+ | `short-fire create [url] <slug> `   | Create shortened URL. Option slug is optional.
+ | `short-fire list <q>`               | List all available URLs. Use option q for searching.
  | `short-fire dump`                   | Dump Firebase configuration for backup purpose.
  | `short-fire restore <file>`         | Restore configuration from file.
- | `short-fire delete [slug]`          | Delete URL by specific slug.
+ | `short-fire delete [slug]`          | Delete URL by specifying slug.
