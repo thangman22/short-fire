@@ -12,28 +12,28 @@
     "shorten"
   ],
   "dependencies": {
-    "cli-box": "^6.0.9",
-    "cli-table": "^0.3.1",
-    "clipboardy": "^1.2.3",
-    "commander": "^2.19.0",
-    "figlet": "^1.2.1",
-    "firebase-tools": "^6.3.1",
-    "format-json": "^1.0.3",
-    "inquirer": "^6.2.2",
-    "json-format": "^1.0.1",
-    "minimist": "^1.2.0",
-    "qrcode-terminal": "^0.12.0",
-    "randomstring": "^1.1.5"
+    "cli-box": "6.0.9",
+    "cli-table": "0.3.1",
+    "clipboardy": "1.2.3",
+    "commander": "2.19.0",
+    "figlet": "1.2.1",
+    "firebase-tools": "6.3.1",
+    "format-json": "1.0.3",
+    "inquirer": "6.2.2",
+    "json-format": "1.0.1",
+    "minimist": "1.2.0",
+    "qrcode-terminal": "0.12.0",
+    "randomstring": "1.1.5"
   },
   "devDependencies": {
-    "eslint": "^5.13.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "jest": "^24.1.0",
-    "proxyquire": "^2.1.0"
+    "eslint": "5.13.0",
+    "eslint-config-standard": "12.0.0",
+    "eslint-plugin-import": "2.16.0",
+    "eslint-plugin-node": "8.0.1",
+    "eslint-plugin-promise": "4.0.1",
+    "eslint-plugin-standard": "4.0.0",
+    "jest": "24.1.0",
+    "proxyquire": "2.1.0"
   },
   "bin": {
     "short-fire": "./index.js"
