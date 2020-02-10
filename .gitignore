@@ -1,3 +1,4 @@
 node_modules
 workspace/firebase.json
 workspace/service-account.json
+workspace/config.json
