@@ -14,7 +14,7 @@
   "dependencies": {
     "cli-box": "6.0.9",
     "cli-table": "0.3.1",
-    "clipboardy": "1.2.3",
+    "clipboardy": "2.2.0",
     "commander": "2.20.3",
     "figlet": "1.2.1",
     "firebase-tools": "6.3.1",
