@@ -1,6 +1,6 @@
 {
   "name": "short-fire",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
   "scripts": {
