@@ -1,15 +1,22 @@
 const path = require('path')
 const fs = require('fs')
+const Conf = require('conf')
+const config = new Conf({
+  encryptionKey: 'short-file'
+})
 
-const FirebaseConfigPath = path.join(path.dirname(fs.realpathSync(__filename)), '../workspace') + '/firebase.json'
 const workspacePath = path.join(path.dirname(fs.realpathSync(__filename)), '../workspace')
 
-if (!fs.existsSync(path)) {
-  fs.writeFileSync(FirebaseConfigPath, '{ "hosting": { "public": "./", "ignore": [ "firebase.json", "**/.*", "**/node_modules/**" ], "redirects": [] } }')
+if (!config.get('firebase')) {
+  config.set('firebase', { 'hosting': { 'public': './', 'ignore': [ 'firebase.json', '**/.*', '**/node_modules/**' ], 'redirects': [] } })
 }
 
-const firebaseConfig = require(FirebaseConfigPath)
-const shortFireConfig = require(path.join(path.dirname(fs.realpathSync(__filename)), '../workspace') + '/config.json')
+if (!config.get('config')) {
+  config.set('config', {})
+}
+
+const firebaseConfig = config.get('firebase')
+const shortFireConfig = config.get('config')
 const redirectList = firebaseConfig.hosting.redirects
 var firebaseRcData = {
   'projects': {
@@ -33,5 +40,6 @@ module.exports = {
   redirectList,
   jsonFormatConfig,
   firebaseRcData,
-  cliTableConfig
+  cliTableConfig,
+  config
 }

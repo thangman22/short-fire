@@ -1,7 +1,6 @@
 const randomstring = require('randomstring')
 const clipboardy = require('clipboardy')
 const chalk = require('chalk')
-const jsonFormat = require('json-format')
 const CliTable = require('cli-table')
 const inquirer = require('inquirer')
 const admin = require('firebase-admin')
@@ -11,27 +10,19 @@ const {
   genQrcode,
   textBox,
   deploy,
-  writeFile,
   printToscreen,
-  readFile
+  readFile,
+  commitToFile
 } = require('./utils')
 var {
   redirectList,
   shortFireConfig,
   firebaseConfig,
   workspacePath,
-  jsonFormatConfig,
   firebaseRcData,
-  cliTableConfig
+  cliTableConfig,
+  config
 } = require('./config')
-
-if (shortFireConfig['service-account-key-file']) {
-  const serviceAccount = require('../workspace/service-account.json')
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: shortFireConfig['project-id'] + '.appspot.com'
-  })
-}
 
 var table = new CliTable(cliTableConfig)
 
@@ -120,12 +111,19 @@ const onCreate = async argv => {
   redirectList.push(redirectObject)
   // Update config file.
   if (!duplicatedLink) {
-    await writeFile(
-      workspacePath + '/firebase.json',
-      jsonFormat(firebaseConfig, jsonFormatConfig)
-    )
+    config.set('firebase', firebaseConfig)
+    // Deploy to firebase hosting.
+    printToscreen(chalk.blue.bold('• Info') + ' Firebase Updating....')
+    await commitToFile()
     // Upload to cloud for backup
     if (shortFireConfig['service-account-key-file']) {
+      const serviceAccount = require('../workspace/service-account.json')
+
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: shortFireConfig['project-id'] + '.appspot.com'
+      })
+
       const bucket = admin.storage().bucket()
       await bucket.upload(workspacePath + '/firebase.json', {
         gzip: true,
@@ -134,8 +132,6 @@ const onCreate = async argv => {
         }
       })
     }
-    // Deploy to firebase hosting.
-    printToscreen(chalk.blue.bold('• Info') + ' Firebase Updating....')
     await deploy(argv)
   }
 
@@ -145,6 +141,7 @@ const onCreate = async argv => {
       chalk.bold(finalLink) +
       ' (Ctrl + v to Paste)'
   )
+
   printToscreen(await genQrcode(finalLink))
 }
 
@@ -164,11 +161,9 @@ const onDelete = async argv => {
   })
 
   firebaseConfig.hosting.redirects = redirectList
-  await writeFile(
-    workspacePath + '/firebase.json',
-    jsonFormat(firebaseConfig, jsonFormatConfig)
-  )
-  deploy(argv)
+  config.set('firebase', firebaseConfig)
+  await commitToFile()
+  await deploy(argv)
   textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
 }
 
@@ -179,11 +174,9 @@ const onRestore = async argv => {
     process.exit(1)
   }
   const configContent = require(file)
-  await writeFile(
-    workspacePath + '/firebase.json',
-    jsonFormat(configContent, jsonFormatConfig)
-  )
-  deploy(argv)
+  config.set('firebase', configContent)
+  await commitToFile()
+  await deploy(argv)
   textBox(chalk.green.bold('• Completed') + ' Restore Data completed.')
 }
 
@@ -255,19 +248,12 @@ const onInit = async () => {
     const serviceAccountData = await readFile(
       answers['service-account-key-file']
     )
-    await writeFile(
-      workspacePath + '/service-account.json',
-      serviceAccountData
-    )
+    config.set('service-account', JSON.parse(serviceAccountData.toString()))
   }
-  await writeFile(
-    workspacePath + '/firebaserc',
-    jsonFormat(firebaseRcData, jsonFormatConfig)
-  )
-  await writeFile(
-    workspacePath + '/config.json',
-    jsonFormat(answers, jsonFormatConfig)
-  )
+
+  config.set('firebaserc', firebaseRcData)
+  config.set('config', answers)
+
   textBox(
     chalk.green.bold('• Completed') +
       ' Create configulation Please run `short-fire create [url]`'

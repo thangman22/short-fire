@@ -4,8 +4,10 @@
   "author": "Warat Wongmaneekit <canopybanj@gmail.com>",
   "description": "Self hosted shorten URL genarator for Firebase hosting",
   "scripts": {
-    "short-fire-dev": "node index.js",
-    "deploy": "npm version patch && npm publish"
+    "short-fire-dev": "node main.js",
+    "lint": "eslint ./libs/*.js main.js --fix",
+    "clean": "rimraf workspace/config.json workspace/firebase.json workspace/firebaserc workspace/service-account.json",
+    "deploy": "npm i && npm version patch && npm publish"
   },
   "repository": {
     "type": "git",
@@ -20,6 +22,7 @@
     "cli-table": "^0.3.1",
     "clipboardy": "^1.2.3",
     "commander": "^2.19.0",
+    "conf": "^6.2.1",
     "figlet": "^1.2.1",
     "firebase-admin": "^8.9.2",
     "firebase-tools": "^7.12.1",
@@ -38,9 +41,10 @@
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-standard": "4.0.1",
     "jest": "24.1.0",
-    "proxyquire": "2.1.0"
+    "proxyquire": "2.1.0",
+    "rimraf": "^3.0.2"
   },
   "bin": {
-    "short-fire": "./index.js"
+    "short-fire": "./main.js"
   }
 }
