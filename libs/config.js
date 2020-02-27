@@ -5,7 +5,7 @@ const FirebaseConfigPath = path.join(path.dirname(fs.realpathSync(__filename)), 
 const workspacePath = path.join(path.dirname(fs.realpathSync(__filename)), '../workspace')
 
 if (!fs.existsSync(path)) {
-  fs.writeFileSync(FirebaseConfigPath, '{ "hosting": { "public": "./", "ignore": [ "firebase.json", "**/.*", "**/node_modules/**" ], "redirects": [ { "source": "/VsqwKBo", "destination": "https://google.com", "type": 302 } ] } }')
+  fs.writeFileSync(FirebaseConfigPath, '{ "hosting": { "public": "./", "ignore": [ "firebase.json", "**/.*", "**/node_modules/**" ], "redirects": [] } }')
 }
 
 const firebaseConfig = require(FirebaseConfigPath)
