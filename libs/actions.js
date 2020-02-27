@@ -173,6 +173,7 @@ const onRestore = async argv => {
     textBox(chalk.red('• Error') + ' Config file is not define.')
     process.exit(1)
   }
+
   const configContent = require(file)
   config.set('firebase', configContent)
   await commitToFile()
