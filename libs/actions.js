@@ -242,8 +242,10 @@ const onInit = async () => {
     {
       type: 'input',
       name: 'service-account-key-file',
-      message:
-        'Your Service Account Key File for Back to Firebase Storage (Optional)'
+      message: 'Your Service Account Key File for Back to Firebase Storage',
+      validate: function (val) {
+        return val !== ''
+      }
     }
   ]
 
