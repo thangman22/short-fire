@@ -14,6 +14,10 @@ Firebase hosting supports re-directing URL to another domain without charge any 
 ## Pre-requisites
 - NPM or Yarn
 
+## Installation
+
+``` npm install -g short-fire ```
+
 ## How to
  | Command                | Description |
  | :--------------------- |:-------------|
