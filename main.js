@@ -47,7 +47,7 @@ if ((!shortFireConfig['project-id'] || !shortFireConfig['token'] || !shortFireCo
 
 if (argv['_'][0] === 'init') {
   printToscreen(header + '\n')
-  onInit(argv)
+  onInit()
 }
 
 if (argv['_'][0] === 'create') {
