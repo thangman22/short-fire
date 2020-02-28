@@ -1,14 +1,15 @@
 #!/usr/bin/env node
+
 const argv = require('minimist')(process.argv.slice(2))
 const chalk = require('chalk')
 const json = require('format-json')
-const figlet = require('figlet')
+const { textSync } = require('figlet')
 
 const { onCreate, onDelete, onRestore, onList, onInit } = require('./libs/actions')
 const { textBox, printToscreen } = require('./libs/utils')
 const { firebaseConfig, shortFireConfig } = require('./libs/config')
 
-const header = chalk.yellow(figlet.textSync('Short Fire', {
+const header = chalk.yellow(textSync('Short Fire', {
   font: 'Graceful',
   horizontalLayout: 'default',
   verticalLayout: 'default'
@@ -46,7 +47,7 @@ if ((!shortFireConfig['project-id'] || !shortFireConfig['token'] || !shortFireCo
 
 if (argv['_'][0] === 'init') {
   printToscreen(header + '\n')
-  onInit(argv)
+  onInit()
 }
 
 if (argv['_'][0] === 'create') {

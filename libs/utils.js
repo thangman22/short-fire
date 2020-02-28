@@ -3,10 +3,13 @@ const client = require('firebase-tools')
 const fs = require('fs')
 const path = require('path')
 const box = require('cli-box')
-var { shortFireConfig, workspacePath } = require('./config')
+const jsonFormat = require('json-format')
+var { shortFireConfig, workspacePath, config, jsonFormatConfig } = require('./config')
 
 const isUrlValid = (userInput) => {
+  /* eslint-disable no-useless-escape */
   var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
+  /* eslint-enable no-useless-escape */
   if (res == null) { return false } else { return true }
 }
 
@@ -62,6 +65,28 @@ const printToscreen = (content) => {
   console.log(content)
 }
 
+const commitToFile = async () => {
+  await writeFile(
+    workspacePath + '/firebase.json',
+    jsonFormat(config.get('firebase'), jsonFormatConfig)
+  )
+
+  await writeFile(
+    workspacePath + '/firebaserc',
+    jsonFormat(config.get('firebaserc'), jsonFormatConfig)
+  )
+
+  await writeFile(
+    workspacePath + '/config.json',
+    jsonFormat(config.get('config'), jsonFormatConfig)
+  )
+
+  await writeFile(
+    workspacePath + '/service-account.json',
+    jsonFormat(config.get('service-account'), jsonFormatConfig)
+  )
+}
+
 module.exports = {
   printToscreen,
   readFile,
@@ -69,5 +94,6 @@ module.exports = {
   deploy,
   isUrlValid,
   genQrcode,
-  textBox
+  textBox,
+  commitToFile
 }

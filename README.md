@@ -10,6 +10,10 @@ Firebase hosting supports re-directing URL to another domain without charge any 
 ## Limitations
 - No analytics provided.
 - No remote database provided, please backup configuration frequently.
+- Multi device usage is not support
+
+## Reestore
+- If you are install short-fire in new machine please download backup file from Firebase storage and restore
 
 ## Pre-requisites
 - NPM or Yarn
