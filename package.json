@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "cli-box": "6.0.10",
-    "cli-table": "0.3.4",
+    "cli-table": "0.3.11",
     "clipboardy": "1.2.3",
     "commander": "2.20.3",
     "conf": "6.2.4",
