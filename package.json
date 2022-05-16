@@ -27,7 +27,7 @@
     "firebase-admin": "8.13.0",
     "firebase-tools": "7.16.2",
     "format-json": "1.0.3",
-    "inquirer": "6.5.2",
+    "inquirer": "8.2.4",
     "json-format": "1.0.1",
     "minimist": "1.2.5",
     "qrcode-terminal": "0.12.0",
