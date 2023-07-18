@@ -22,7 +22,7 @@
     "cli-table": "0.3.4",
     "clipboardy": "1.2.3",
     "commander": "2.20.3",
-    "conf": "6.2.4",
+    "conf": "11.0.2",
     "figlet": "1.5.0",
     "firebase-admin": "8.13.0",
     "firebase-tools": "7.16.2",
