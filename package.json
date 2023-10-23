@@ -20,7 +20,7 @@
   "dependencies": {
     "cli-box": "6.0.10",
     "cli-table": "0.3.4",
-    "clipboardy": "1.2.3",
+    "clipboardy": "4.0.0",
     "commander": "2.20.3",
     "conf": "6.2.4",
     "figlet": "1.5.0",
