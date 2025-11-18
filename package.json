@@ -18,7 +18,7 @@
     "shorten-url"
   ],
   "dependencies": {
-    "cli-box": "6.0.10",
+    "cli-box": "6.0.11",
     "cli-table": "0.3.4",
     "clipboardy": "1.2.3",
     "commander": "2.20.3",
