@@ -1,99 +1,86 @@
-const qrcode = require('qrcode-terminal')
-const client = require('firebase-tools')
-const fs = require('fs')
-const path = require('path')
-const box = require('cli-box')
-const jsonFormat = require('json-format')
-var { shortFireConfig, workspacePath, config, jsonFormatConfig } = require('./config')
+import crypto from 'node:crypto'
+import { existsSync } from 'node:fs'
+import qrcode from 'qrcode-terminal'
+import { getSettings, syncWorkspace } from './config.js'
 
-const isUrlValid = (userInput) => {
-  /* eslint-disable no-useless-escape */
-  var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
-  /* eslint-enable no-useless-escape */
-  if (res == null) { return false } else { return true }
-}
+// No 0/O/1/l/I so a link stays readable when it is dictated or printed.
+const SLUG_ALPHABET = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
-const genQrcode = (url) => {
-  return new Promise((resolve, reject) => {
-    qrcode.generate(url, { small: true }, function (qrcode) {
-      resolve(qrcode)
-    })
-  })
-}
+export const printToscreen = content => console.log(content)
 
-const textBox = (text) => {
-  let boxString = box((text.length) + 'x3', {
-    text: text,
-    stretch: true,
-    autoEOL: true,
-    vAlign: 'center',
-    hAlign: 'middle'
-  })
-  printToscreen(boxString)
-}
-
-const deploy = async (argv) => {
-  // Add dry-run for testiung purpose
-  if (!argv['dry-run']) {
-    return client.deploy({
-      project: shortFireConfig['project-id'],
-      token: shortFireConfig['token'],
-      cwd: workspacePath
-    })
+export const isUrlValid = userInput => {
+  let url
+  try {
+    url = new URL(userInput)
+  } catch {
+    return false
   }
+
+  // Firebase Hosting needs an absolute destination it can put in a Location
+  // header, so a scheme is mandatory.
+  return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-const writeFile = (file, text) => {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(file, text, async (err) => {
-      if (err) reject(err)
-      resolve(true)
-    })
-  })
+export const generateSlug = (length = 7) => {
+  let slug = ''
+  for (let i = 0; i < length; i++) {
+    slug += SLUG_ALPHABET[crypto.randomInt(SLUG_ALPHABET.length)]
+  }
+  return slug
 }
 
-const readFile = (file) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path.join(file), async (err, data) => {
-      if (err) reject(err)
-      resolve(data)
-    })
-  })
+export const genQrcode = url =>
+  new Promise(resolve => qrcode.generate(url, { small: true }, resolve))
+
+// eslint-disable-next-line no-control-regex
+const ANSI = /\u001B\[[0-9;]*m/g
+const visibleLength = text => text.replace(ANSI, '').length
+
+export const textBox = text => {
+  const lines = text.split('\n')
+  const width = Math.max(...lines.map(visibleLength)) + 2
+  const padded = lines.map(line => `│ ${line}${' '.repeat(width - visibleLength(line) - 2)} │`)
+
+  printToscreen([
+    `┌${'─'.repeat(width)}┐`,
+    ...padded,
+    `└${'─'.repeat(width)}┘`
+  ].join('\n'))
 }
 
-const printToscreen = (content) => {
-  console.log(content)
+export const deploy = async (options = {}) => {
+  const workspace = syncWorkspace()
+  // `--dry-run` regenerates the workspace but never talks to Firebase, which
+  // keeps the command testable without credentials.
+  if (options['dry-run']) return workspace
+
+  const settings = getSettings()
+  const deployOptions = {
+    project: settings['project-id'],
+    only: 'hosting',
+    cwd: workspace,
+    nonInteractive: true,
+    force: true
+  }
+
+  // Prefer a service account: `firebase login:ci` tokens are deprecated and
+  // firebase-tools warns on every deploy that uses one. A 1.x config can carry
+  // a key path that no longer exists, so fall back rather than fail.
+  if (settings['service-account'] && existsSync(settings['service-account'])) {
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = settings['service-account']
+  } else if (settings.token) {
+    deployOptions.token = settings.token
+  } else if (settings['service-account']) {
+    throw new Error(`Service account key not found at ${settings['service-account']}. Run \`short-fire init\` to point at the right file.`)
+  } else {
+    throw new Error('No credentials configured. Run `short-fire init`.')
+  }
+
+  // firebase-tools is by far the heaviest import in the tree; loading it here
+  // keeps `list`, `dump` and `where` instant.
+  const { default: client } = await import('firebase-tools')
+  await client.deploy(deployOptions)
+  return workspace
 }
 
-const commitToFile = async () => {
-  await writeFile(
-    workspacePath + '/firebase.json',
-    jsonFormat(config.get('firebase'), jsonFormatConfig)
-  )
-
-  await writeFile(
-    workspacePath + '/firebaserc',
-    jsonFormat(config.get('firebaserc'), jsonFormatConfig)
-  )
-
-  await writeFile(
-    workspacePath + '/config.json',
-    jsonFormat(config.get('config'), jsonFormatConfig)
-  )
-
-  await writeFile(
-    workspacePath + '/service-account.json',
-    jsonFormat(config.get('service-account'), jsonFormatConfig)
-  )
-}
-
-module.exports = {
-  printToscreen,
-  readFile,
-  writeFile,
-  deploy,
-  isUrlValid,
-  genQrcode,
-  textBox,
-  commitToFile
-}
+export const shortUrl = slug => `${getSettings().domain.replace(/\/+$/, '')}/${slug}`

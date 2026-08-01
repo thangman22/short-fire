@@ -1,19 +1,22 @@
 #!/usr/bin/env node
 
-const argv = require('minimist')(process.argv.slice(2))
-const chalk = require('chalk')
-const json = require('format-json')
-const { textSync } = require('figlet')
+import { parseArgs } from 'node:util'
+import chalk from 'chalk'
+import figlet from 'figlet'
+import {
+  onCreate,
+  onDelete,
+  onDump,
+  onInit,
+  onList,
+  onPull,
+  onRestore,
+  onWhere
+} from './libs/actions.js'
+import { printToscreen, textBox } from './libs/utils.js'
+import { isConfigured } from './libs/config.js'
 
-const { onCreate, onDelete, onRestore, onList, onInit } = require('./libs/actions')
-const { textBox, printToscreen } = require('./libs/utils')
-const { firebaseConfig, shortFireConfig } = require('./libs/config')
-
-const header = chalk.yellow(textSync('Short Fire', {
-  font: 'Graceful',
-  horizontalLayout: 'default',
-  verticalLayout: 'default'
-}))
+const header = chalk.yellow(figlet.textSync('Short Fire', { font: 'Graceful' }))
 
 const help = `
 Usage: short-fire [command] <options>
@@ -24,52 +27,72 @@ Command:
       options:
         -n, --new
           Force the system to create a new random url when there is an existing destination.
+        --dry-run
+          Build the Firebase workspace but do not deploy.
   list <q>                      List all available URL. defind q for searching.
-  dump                          Dump Firebase configulation for backup purpose.
-  restore <file>                Restore configulation from file.
+  dump                          Dump the link list for backup purpose.
+  restore [file]                Restore link list from file.
+  pull                          Re-read the live link list from Firebase Hosting.
   delete [slug]                 Delete URL by specific slug.
+  where                         Show where the config and workspace live.
 
 Examples:
   $ short-fire create http://example.com/link
   $ short-fire create http://example.com/link example
-  
+
 `
 
-if (!argv['_'][0] || argv['_'][0] === '--help') {
-  printToscreen(header + '\n')
-  printToscreen(help)
+const argv = parseArgs({
+  allowPositionals: true,
+  strict: false,
+  options: {
+    new: { type: 'boolean', short: 'n', default: false },
+    'dry-run': { type: 'boolean', default: false },
+    help: { type: 'boolean', short: 'h', default: false }
+  }
+})
+
+const command = argv.positionals[0]
+
+const commands = {
+  init: onInit,
+  create: onCreate,
+  list: onList,
+  dump: onDump,
+  restore: onRestore,
+  pull: onPull,
+  delete: onDelete,
+  where: onWhere
 }
 
-if ((!shortFireConfig['project-id'] || !shortFireConfig['token'] || !shortFireConfig['domain']) && argv['_'][0] !== 'init') {
-  textBox(chalk.red('• Error') + ' Configulation not found. Please run `short-fire init`')
+// Commands that only touch local state, so they run before the config check.
+const OFFLINE = new Set(['init', 'dump', 'where'])
+
+if (!command || argv.values.help) {
+  printToscreen(header + '\n')
+  printToscreen(help)
   process.exit(0)
 }
 
-if (argv['_'][0] === 'init') {
+if (!commands[command]) {
   printToscreen(header + '\n')
-  onInit()
+  textBox(chalk.red('• Error') + ` \`${command}\` is not a short-fire command`)
+  printToscreen(help)
+  process.exit(1)
 }
 
-if (argv['_'][0] === 'create') {
-  printToscreen(header + '\n')
-  onCreate(argv)
+if (!OFFLINE.has(command) && !isConfigured()) {
+  textBox(chalk.red('• Error') + ' Configulation not found. Please run `short-fire init`')
+  process.exit(1)
 }
 
-if (argv['_'][0] === 'list') {
-  printToscreen(header + '\n')
-  onList(argv)
-}
+// `dump` is meant to be piped into a backup file, so it must not print the
+// banner.
+if (command !== 'dump') printToscreen(header + '\n')
 
-if (argv['_'][0] === 'dump') {
-  printToscreen(json.diffy(firebaseConfig))
-}
-
-if (argv['_'][0] === 'restore') {
-  printToscreen(header + '\n')
-  onRestore(argv)
-}
-
-if (argv['_'][0] === 'delete') {
-  printToscreen(header + '\n')
-  onDelete(argv)
+try {
+  await commands[command](argv)
+} catch (error) {
+  textBox(chalk.red.bold('• Error') + ' ' + (error?.message ?? String(error)))
+  process.exit(1)
 }

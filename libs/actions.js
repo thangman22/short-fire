@@ -1,270 +1,260 @@
-const randomstring = require('randomstring')
-const clipboardy = require('clipboardy')
-const chalk = require('chalk')
-const CliTable = require('cli-table')
-const inquirer = require('inquirer')
-const admin = require('firebase-admin')
-
-const {
-  isUrlValid,
-  genQrcode,
-  textBox,
-  deploy,
-  printToscreen,
-  readFile,
-  commitToFile
-} = require('./utils')
-var {
-  redirectList,
-  shortFireConfig,
-  firebaseConfig,
-  workspacePath,
-  firebaseRcData,
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import chalk from 'chalk'
+import CliTable from 'cli-table3'
+import clipboard from 'clipboardy'
+import { input } from '@inquirer/prompts'
+import {
   cliTableConfig,
-  config
-} = require('./config')
+  getRedirects,
+  getSettings,
+  isConfigured,
+  saveRedirects,
+  saveSettings,
+  siteId,
+  store,
+  workspacePath
+} from './config.js'
+import { fetchLiveRedirects, readServiceAccount } from './hosting-api.js'
+import {
+  deploy,
+  genQrcode,
+  generateSlug,
+  isUrlValid,
+  printToscreen,
+  shortUrl,
+  textBox
+} from './utils.js'
 
-var table = new CliTable(cliTableConfig)
+const fail = message => {
+  textBox(chalk.red.bold('• Error') + ' ' + message)
+  process.exit(1)
+}
 
-const onCreate = async argv => {
-  let foundSlug = true
-  let generatedSlug = null
-  let duplicatedLink = false
+const done = message => textBox(chalk.green.bold('• Completed') + ' ' + message)
 
-  const url = argv['_'][1]
-  const slug = argv['_'][2]
+const info = message => printToscreen(chalk.blue.bold('• Info') + ' ' + message)
 
-  const newOption = argv['new'] || argv['n']
+const sourceOf = slug => '/' + slug
 
-  // Check URL not null
+// Save the new link list and publish it. If the deploy fails, put the old list
+// back so the local config keeps matching what is actually live.
+const commit = async (redirects, options) => {
+  const previous = getRedirects()
+  saveRedirects(redirects)
+
+  info('Firebase Updating....')
+  try {
+    await deploy(options)
+  } catch (error) {
+    saveRedirects(previous)
+    throw error
+  }
+}
+
+export const onCreate = async argv => {
+  const [, url, wantedSlug] = argv.positionals
+  const forceNew = argv.values.new
 
   if (!url) {
-    textBox(
-      chalk.red('• Error') +
-        ' URL is empty please define. \n\n Example usage: `short-fire [url] <slug>`'
-    )
-    process.exit(1)
+    fail('URL is empty please define. \n\n Example usage: `short-fire create [url] <slug>`')
   }
 
-  // Check valid URL
   if (!isUrlValid(url)) {
-    textBox(
-      chalk.red.bold('• Error') + ' URL is not valid. Please check your link'
-    )
-    process.exit(1)
+    fail('URL is not valid. It must start with http:// or https://')
   }
 
-  while (foundSlug) {
-    if (!slug) {
-      generatedSlug = randomstring.generate(7)
-    } else {
-      generatedSlug = slug
-    }
-    // Find duplicate link and return current.
-    let findExistLink = redirectList.filter(redirect => {
-      if (url === redirect.destination) {
-        return true
-      } else {
-        return false
-      }
-    })
+  const redirects = getRedirects()
 
-    // Have existing link and do not have slug and do not have new option.
-    if (findExistLink.length > 0 && !slug && !newOption) {
-      foundSlug = false
-      duplicatedLink = true
-      generatedSlug = findExistLink[0].source.replace('/', '')
-      break
-    }
-
-    // Do not have existing link.
-    // Find duplicate slug for warning user.
-    let findExist = redirectList.filter(redirect => {
-      if ('/' + generatedSlug === redirect.source) {
-        return true
-      } else {
-        return false
-      }
-    })
-
-    if (findExist.length === 0) {
-      foundSlug = false
-    } else {
-      if (slug) {
-        textBox(
-          chalk.red.bold('• Error') + ' Slug is duplicated. Please change'
-        )
-        process.exit(1)
-      }
-    }
+  // Reuse the existing short link for a destination we already published,
+  // unless the user asked for a specific slug or explicitly forced a new one.
+  const existing = redirects.find(redirect => redirect.destination === url)
+  if (existing && !wantedSlug && !forceNew) {
+    const slug = existing.source.replace(/^\//, '')
+    copyToClipboard(shortUrl(slug))
+    done('Short link already exists: ' + chalk.bold(shortUrl(slug)) + ' (Ctrl + v to Paste)')
+    printToscreen(await genQrcode(shortUrl(slug)))
+    return
   }
 
-  let redirectObject = {
-    source: '/' + generatedSlug,
-    destination: url,
-    type: 302
-  }
-
-  let finalLink = `${shortFireConfig.domain}/${generatedSlug}`
-  // Copy to clipboard.
-  clipboardy.writeSync(finalLink)
-  redirectList.push(redirectObject)
-  // Update config file.
-  if (!duplicatedLink) {
-    config.set('firebase', firebaseConfig)
-    // Deploy to firebase hosting.
-    printToscreen(chalk.blue.bold('• Info') + ' Firebase Updating....')
-    await commitToFile()
-    // Upload to cloud for backup
-    if (shortFireConfig['service-account-key-file']) {
-      const serviceAccount = require('../workspace/service-account.json')
-
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        storageBucket: shortFireConfig['project-id'] + '.appspot.com'
-      })
-
-      const bucket = admin.storage().bucket()
-      await bucket.upload(workspacePath + '/firebase.json', {
-        gzip: true,
-        metadata: {
-          cacheControl: 'public, max-age=31536000'
-        }
-      })
+  let slug = wantedSlug
+  if (slug) {
+    if (redirects.some(redirect => redirect.source === sourceOf(slug))) {
+      fail('Slug is duplicated. Please change')
     }
-    await deploy(argv)
+  } else {
+    do {
+      slug = generateSlug()
+    } while (redirects.some(redirect => redirect.source === sourceOf(slug)))
   }
 
-  textBox(
-    chalk.green.bold('• Completed') +
-      ' Short link is ' +
-      chalk.bold(finalLink) +
-      ' (Ctrl + v to Paste)'
+  await commit([...redirects, { source: sourceOf(slug), destination: url, type: 302 }], argv.values)
+
+  const link = shortUrl(slug)
+  copyToClipboard(link)
+  done('Short link is ' + chalk.bold(link) + ' (Ctrl + v to Paste)')
+  printToscreen(await genQrcode(link))
+}
+
+const copyToClipboard = link => {
+  try {
+    clipboard.writeSync(link)
+  } catch {
+    // Headless shells and containers have no clipboard; the link is printed
+    // anyway so this is not worth failing a deploy over.
+  }
+}
+
+export const onDelete = async argv => {
+  const [, slug] = argv.positionals
+  if (!slug) fail('Please define slug to delete')
+
+  const redirects = getRedirects()
+  const remaining = redirects.filter(redirect => redirect.source !== sourceOf(slug))
+
+  if (remaining.length === redirects.length) {
+    fail(`No short link found for /${slug}`)
+  }
+
+  await commit(remaining, argv.values)
+  done('Delete /' + slug + ' completed.')
+}
+
+export const onList = argv => {
+  const [, query] = argv.positionals
+  const table = new CliTable(cliTableConfig)
+
+  const redirects = getRedirects().filter(redirect =>
+    !query || redirect.destination.includes(query) || redirect.source.includes(query)
   )
 
-  printToscreen(await genQrcode(finalLink))
-}
-
-const onDelete = async argv => {
-  const slug = argv['_'][1]
-  if (!slug) {
-    textBox(chalk.red.bold('• Error') + ' Please define slug to delete')
-    process.exit(0)
+  for (const redirect of redirects) {
+    table.push([shortUrl(redirect.source.replace(/^\//, '')), redirect.destination])
   }
 
-  redirectList = redirectList.filter(redirect => {
-    if (redirect.source !== '/' + slug) {
-      return true
-    } else {
-      return false
-    }
-  })
-
-  firebaseConfig.hosting.redirects = redirectList
-  config.set('firebase', firebaseConfig)
-  await commitToFile()
-  await deploy(argv)
-  textBox(chalk.green.bold('• Completed') + ' Delete /' + slug + ' completed.')
-}
-
-const onRestore = async argv => {
-  const file = argv['_'][1]
-  if (!file) {
-    textBox(chalk.red('• Error') + ' Config file is not define.')
-    process.exit(1)
-  }
-
-  const configContent = require(file)
-  config.set('firebase', configContent)
-  await commitToFile()
-  await deploy(argv)
-  textBox(chalk.green.bold('• Completed') + ' Restore Data completed.')
-}
-
-const onList = argv => {
-  const q = argv['_'][1]
-
-  if (q) {
-    redirectList = redirectList.filter(redirect => {
-      if (
-        redirect.destination.indexOf(q) !== -1 ||
-        redirect.source.indexOf(q) !== -1
-      ) {
-        return true
-      } else {
-        return false
-      }
-    })
-  }
-
-  redirectList.map(redirect => {
-    table.push([
-      `${shortFireConfig.domain}${redirect.source}`,
-      redirect.destination
-    ])
-  })
   printToscreen(table.toString())
+  printToscreen(chalk.dim(`${redirects.length} link(s)`))
 }
 
-const onInit = async () => {
-  var questions = [
-    {
-      type: 'input',
-      name: 'project-id',
-      message: 'What is your Firebase project ID?',
-      validate: function (val) {
-        return val !== ''
-      }
-    },
-    {
-      type: 'input',
-      name: 'token',
-      message:
-        'What is your Firebase token? (Run `firebase login:ci` for token)',
-      validate: function (val) {
-        return val !== ''
-      }
-    },
-    {
-      type: 'input',
-      name: 'domain',
-      message: 'What is your domain name e.g. https://example.com',
-      validate: function (val) {
-        return val !== ''
-      }
-    },
-    {
-      type: 'input',
-      name: 'service-account-key-file',
-      message: 'Your Service Account Key File for Back to Firebase Storage',
-      validate: function (val) {
-        return val !== ''
-      }
-    }
-  ]
+export const onDump = () => printToscreen(JSON.stringify(getRedirects(), null, 2))
 
-  const answers = await inquirer.prompt(questions)
-  firebaseRcData.projects.default = answers['project-id']
-  if (answers['service-account-key-file']) {
-    const serviceAccountData = await readFile(
-      answers['service-account-key-file']
-    )
-    config.set('service-account', JSON.parse(serviceAccountData.toString()))
+// Accepts a 2.x dump (a bare array) as well as a 1.x `short-fire dump`
+// backup, which was the whole firebase.json object.
+export const parseBackup = content => {
+  const data = JSON.parse(content)
+  const redirects = Array.isArray(data) ? data : data?.hosting?.redirects
+
+  if (!Array.isArray(redirects)) {
+    throw new Error('Backup file does not contain a redirect list')
   }
 
-  config.set('firebaserc', firebaseRcData)
-  config.set('config', answers)
+  for (const redirect of redirects) {
+    if (!redirect?.source || !redirect?.destination) {
+      throw new Error('Backup file contains a redirect without a source or destination')
+    }
+  }
 
-  textBox(
-    chalk.green.bold('• Completed') +
-      ' Create configulation Please run `short-fire create [url]`'
-  )
+  return redirects.map(({ source, destination, type }) => ({
+    source,
+    destination,
+    type: type ?? 302
+  }))
 }
 
-module.exports = {
-  onInit,
-  onRestore,
-  onCreate,
-  onDelete,
-  onList
+export const onRestore = async argv => {
+  const [, file] = argv.positionals
+  if (!file) fail('Config file is not define.')
+
+  let redirects
+  try {
+    redirects = parseBackup(await fs.readFile(path.resolve(file), 'utf8'))
+  } catch (error) {
+    fail(`Could not read ${file}: ${error.message}`)
+  }
+
+  await commit(redirects, argv.values)
+  done(`Restore ${redirects.length} link(s) completed.`)
+}
+
+// The 1.x answer to "how do I move to a new machine" was to back the config up
+// to Cloud Storage, which now requires the paid Blaze plan. Reading the live
+// Hosting release back costs nothing.
+export const onPull = async argv => {
+  const settings = getSettings()
+  if (!settings['service-account']) {
+    fail('Pull needs a service account key. Run `short-fire init` and provide one.')
+  }
+
+  info('Reading the live config from Firebase Hosting....')
+
+  let redirects
+  try {
+    redirects = await fetchLiveRedirects({
+      site: siteId(),
+      serviceAccountFile: settings['service-account']
+    })
+  } catch (error) {
+    fail(error.message)
+  }
+
+  saveRedirects(redirects)
+  done(`Pulled ${redirects.length} link(s) from ${siteId()}.`)
+}
+
+export const onInit = async () => {
+  const current = getSettings()
+  const required = value => (value.trim() === '' ? 'This is required' : true)
+
+  const projectId = await input({
+    message: 'What is your Firebase project ID?',
+    default: current['project-id'] || undefined,
+    validate: required
+  })
+
+  const site = await input({
+    message: 'What is your Firebase Hosting site ID?',
+    default: current['site-id'] || projectId
+  })
+
+  const domain = await input({
+    message: 'What is your domain name e.g. https://example.com',
+    default: current.domain || undefined,
+    validate: value => {
+      if (required(value) !== true) return 'This is required'
+      return isUrlValid(value) ? true : 'Must be a full URL, e.g. https://example.com'
+    }
+  })
+
+  const serviceAccount = await input({
+    message: 'Path to your service account key file (JSON)',
+    default: current['service-account'] || undefined,
+    validate: async value => {
+      if (value.trim() === '') return 'This is required — `firebase login:ci` tokens are deprecated'
+      try {
+        await readServiceAccount(path.resolve(value))
+        return true
+      } catch (error) {
+        return error.message
+      }
+    }
+  })
+
+  saveSettings({
+    'project-id': projectId.trim(),
+    'site-id': site.trim(),
+    domain: domain.trim().replace(/\/+$/, ''),
+    'service-account': path.resolve(serviceAccount.trim()),
+    // A leftover 1.x CI token would silently win over the service account.
+    token: ''
+  })
+
+  done('Create configulation Please run `short-fire create [url]`')
+}
+
+export const onWhere = () => {
+  const table = new CliTable({ style: { head: ['green'] }, head: ['What', 'Where'] })
+  table.push(['Config file', store.path])
+  table.push(['Deploy workspace', workspacePath])
+  table.push(['Configured', isConfigured() ? 'yes' : 'no'])
+  printToscreen(table.toString())
 }

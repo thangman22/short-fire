@@ -1,3 +1,8 @@
 node_modules
-workspace/firebase.json
-workspace/service-account.json
+.firebase/
+firebase-debug.log*
+*.log
+
+# Never let a service account key near the repo.
+service-account*.json
+*-key.json
